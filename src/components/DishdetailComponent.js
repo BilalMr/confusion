@@ -1,6 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom';
 
+import {Loading} from './LoadingComponent'
+
 import {Card, CardTitle, CardText, CardImg, CardBody, Breadcrumb, BreadcrumbItem, Modal, ModalHeader, Row, Label, Col, ModalBody, Button} from 'reactstrap'
 import {LocalForm, Control, Errors} from 'react-redux-form'
 
@@ -19,6 +21,7 @@ const validEmail = (val) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(val
                 isModalOpen: false
             }
             this.toggleModal = this.toggleModal.bind(this)
+            this.handleSubmit = this.handleSubmit.bind(this)
         }
 
         toggleModal(){
@@ -26,13 +29,17 @@ const validEmail = (val) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(val
                 return {isModalOpen: !prevState.isModalOpen}
             })
         }
+        handleSubmit(values){
+            this.toggleModal();
+            this.props.addComment(this.props.dishId, values.rating, values.author, values.comment);        }
+
         render(){
             return( <div>
                         <button onClick={this.toggleModal}><span className="fa fa-pencil"></span> Submit Comment</button>
                         <Modal isOpen={this.state.isModalOpen} toggle={this.toggleModal}>
                             <ModalHeader toggle={this.state.toggleModal}>Submit Comment</ModalHeader>
                             <ModalBody>
-                                <LocalForm>
+                                <LocalForm onSubmit={this.handleSubmit}>
                                     
                                     <Row>
                                         <Label htmlFor='rating' md={12}>Rating</Label>
@@ -48,14 +55,14 @@ const validEmail = (val) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(val
                                     </Row>
 
                                     <Row className='form-group'>
-                                    <Label htmlFor='name' md={12}>Your Name</Label>
+                                    <Label htmlFor='author' md={12}>Your Name</Label>
                                     <Col md={12}>
-                                        <Control.text model='.name' id='name' name='name' placeholder='Your Name' className='form-control'
+                                        <Control.text model='.author' id='author' name='author' placeholder='Your Name' className='form-control'
                                         validators={{required, minLength: minLength(3), maxLength: maxLength(15)}}
                                         />
                                     <Errors
                                         className="text-danger"
-                                        model=".name"
+                                        model=".author"
                                         show="touched"
                                         messages={{
                                             minLength: 'Must be greater than 2 characters',
@@ -104,7 +111,7 @@ const validEmail = (val) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(val
         }
     }
          
-    const RenderComments = ({comments}) =>{
+    const RenderComments = ({comments, addComment, dishId}) =>{
         if (comments){
             return(
                 <div>
@@ -113,7 +120,7 @@ const validEmail = (val) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(val
                         <li>{comment.comment}</li>
                         <li>-- {comment.author}, {new Intl.DateTimeFormat('en-US',{ year: 'numeric', month:'short', day: '2-digit'}).format(new Date(Date.parse(comment.date)))}</li>
                     </ul>)}
-                    <CommentForm />
+                    <CommentForm dishId={dishId} addComment={addComment}/>
                 </div>
             )
         }
@@ -123,7 +130,28 @@ const validEmail = (val) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(val
 
 
     const DishDetail = (props) => {
-        if (props.dish){
+
+        if (props.isLoading) {
+            return(
+                <div className="container">
+                    <div className="row">            
+                        <Loading />
+                    </div>
+                </div>
+            );
+        }
+
+        else if (props.errMess) {
+            return(
+                <div className="container">
+                    <div className="row">            
+                        <h4>{props.errMess}</h4>
+                    </div>
+                </div>
+            );
+        }
+        
+        else if (props.dish != null){
             return (
                 <div className="container">
                 <div className="row">
@@ -142,7 +170,8 @@ const validEmail = (val) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(val
                         <RenderDish dish={props.dish} />
                     </div>
                     <div className="col-12 col-md-5 m-1">
-                        <RenderComments comments={props.comments} />
+                        <RenderComments comments={props.comments}  addComment={props.addComment}
+                                        dishId={props.dish.id}/>
                     </div>
                 </div>
                 </div>
