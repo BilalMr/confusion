@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom';
+import { baseUrl } from '../shared/baseUrl';
 
 import {Loading} from './LoadingComponent'
 
@@ -9,8 +10,6 @@ import {LocalForm, Control, Errors} from 'react-redux-form'
 const required = (val) => val && val.length;
 const maxLength = (len) => (val) => !(val) || (val.length <= len);
 const minLength = (len) => (val) => val && (val.length >= len);
-const isNumber = (val) => !isNaN(Number(val));
-const validEmail = (val) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(val);
 
 
     class CommentForm extends React.Component{
@@ -98,7 +97,7 @@ const validEmail = (val) => /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(val
         if (dish){
             return(
                 <Card>
-                    <CardImg width='100%' src={dish.image} alt={dish.name} />
+                       <CardImg top src={baseUrl + dish.image} alt={dish.name} />
                     <CardBody>
                         <CardTitle heading = 'true' >{dish.name}</CardTitle>
                         <CardText>{dish.description}</CardText>
